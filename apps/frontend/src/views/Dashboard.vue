@@ -89,6 +89,7 @@ import { useQuasar } from 'quasar';
 import type { ResumoFinanceiro } from '@finance/shared';
 import ResumoFinanceiroCard from '../components/ResumoFinanceiro.vue';
 import VueApexCharts from 'vue3-apexcharts';
+import type { ApexOptions } from 'apexcharts';
 
 const $q = useQuasar();
 const resumo = ref<ResumoFinanceiro | null>(null);
@@ -113,7 +114,7 @@ const linhaSeries = computed(() => [
   }
 ]);
 
-const linhaChartOptions = computed(() => ({
+const linhaChartOptions = computed<ApexOptions>(() => ({
   chart: {
     type: 'area',
     toolbar: { show: false },
@@ -144,7 +145,7 @@ const linhaChartOptions = computed(() => ({
 const gastosPieSeries = computed(() => {
   return resumo.value ? Object.values(resumo.value.gastosPorCategoria) : [];
 });
-const gastosPieOptions = computed(() => ({
+const gastosPieOptions = computed<ApexOptions>(() => ({
   chart: { type: 'donut', background: 'transparent' },
   theme: { mode: isDark.value ? 'dark' : 'light' },
   labels: resumo.value ? Object.keys(resumo.value.gastosPorCategoria) : [],
@@ -156,11 +157,10 @@ const gastosPieOptions = computed(() => ({
   legend: { position: 'bottom' }
 }));
 
-// Configuração Pie - Entradas
 const entradasPieSeries = computed(() => {
   return resumo.value ? Object.values(resumo.value.entradasPorCategoria) : [];
 });
-const entradasPieOptions = computed(() => ({
+const entradasPieOptions = computed<ApexOptions>(() => ({
   chart: { type: 'donut', background: 'transparent' },
   theme: { mode: isDark.value ? 'dark' : 'light' },
   labels: resumo.value ? Object.keys(resumo.value.entradasPorCategoria) : [],
