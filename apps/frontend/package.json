@@ -11,6 +11,7 @@
     "dependencies": {
         "@finance/shared": "*",
         "@quasar/extras": "^1.16.0",
+        "@supabase/supabase-js": "^2.99.2",
         "apexcharts": "^5.10.4",
         "axios": "^1.6.0",
         "quasar": "^2.16.0",

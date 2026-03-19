@@ -1,8 +1,9 @@
 import { NextResponse } from 'next/server';
-import { supabase } from '../../../lib/supabase';
+import { createAuthClient } from '../../../lib/supabase';
 
 export async function GET(req: Request) {
     try {
+        const supabase = createAuthClient(req);
         const { data, error } = await supabase
             .from('gastos_fixos')
             .select('*')
@@ -32,6 +33,8 @@ export async function POST(req: Request) {
     try {
         const body = await req.json();
         const { tipo, descricao, valor, diaVencimento, categoria } = body;
+        
+        const supabase = createAuthClient(req);
 
         const { data, error } = await supabase
             .from('gastos_fixos')

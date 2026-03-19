@@ -1,6 +1,6 @@
 <template>
   <q-layout view="lHh Lpr lFf">
-    <q-header :class="['modern-header', $q.dark.isActive ? 'bg-dark' : 'bg-white text-dark']" elevated>
+    <q-header v-if="route.name !== 'login'" :class="['modern-header', $q.dark.isActive ? 'bg-dark' : 'bg-white text-dark']" elevated>
       <q-toolbar class="q-px-lg q-py-sm">
         <q-btn flat round dense icon="menu" @click="toggleLeftDrawer" class="q-mr-sm" />
         
@@ -24,6 +24,7 @@
     </q-header>
 
     <q-drawer 
+      v-if="route.name !== 'login'"
       show-if-above 
       v-model="leftDrawerOpen" 
       side="left" 
@@ -53,6 +54,13 @@
           <q-item-section avatar><q-icon name="event_repeat" size="sm" /></q-item-section>
           <q-item-section class="text-weight-medium">Gastos Fixos</q-item-section>
         </q-item>
+
+        <q-separator class="q-my-md" />
+        
+        <q-item clickable v-ripple @click="handleLogout" class="border-radius-item q-mb-sm transition-ease text-negative">
+          <q-item-section avatar><q-icon name="logout" size="sm" color="negative" /></q-item-section>
+          <q-item-section class="text-weight-medium">Sair</q-item-section>
+        </q-item>
       </q-list>
       
       <div class="absolute-bottom q-pa-md text-center text-caption text-grey-5">
@@ -73,13 +81,27 @@
 <script setup lang="ts">
 import { ref, watch, onMounted } from 'vue';
 import { useQuasar } from 'quasar';
+import { useRouter, useRoute } from 'vue-router';
+import { supabase } from './services/supabase';
 
 const $q = useQuasar();
 const leftDrawerOpen = ref(false);
+const router = useRouter();
+const route = useRoute();
 
 function toggleLeftDrawer () {
   leftDrawerOpen.value = !leftDrawerOpen.value;
 }
+
+const handleLogout = async () => {
+  await supabase.auth.signOut();
+  router.push('/login');
+};
+
+watch(() => route.path, (newPath) => {
+  console.log('Current Route Path:', newPath);
+  console.log('Current Route Name:', route.name);
+});
 
 // Persist dark mode state based on quasar settings if needed
 onMounted(() => {

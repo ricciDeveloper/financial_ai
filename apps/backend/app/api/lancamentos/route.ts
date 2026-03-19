@@ -1,11 +1,12 @@
 import { NextResponse } from 'next/server';
-import { supabase } from '../../../lib/supabase';
+import { createAuthClient } from '../../../lib/supabase';
 
 export async function GET(req: Request) {
     try {
         const { searchParams } = new URL(req.url);
         const tipo = searchParams.get('tipo');
 
+        const supabase = createAuthClient(req);
         let query = supabase.from('lancamentos').select('*').order('data', { ascending: false });
 
         if (tipo) {
@@ -31,7 +32,9 @@ export async function GET(req: Request) {
             criadoEm: item.criado_em,
         }));
 
-        return NextResponse.json({ data: formattedData });
+        const response = NextResponse.json({ data: formattedData });
+        response.headers.set('Cache-Control', 'private, max-age=10, stale-while-revalidate=59');
+        return response;
     } catch (error: any) {
         return NextResponse.json({ error: error.message }, { status: 500 });
     }

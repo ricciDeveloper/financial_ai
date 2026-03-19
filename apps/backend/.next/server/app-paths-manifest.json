@@ -1,10 +1,5 @@
 {
-  "/api/chat/route": "app/api/chat/route.js",
-  "/api/gastos-fixos/route": "app/api/gastos-fixos/route.js",
-  "/api/lancamentos/route": "app/api/lancamentos/route.js",
   "/api/resumo/route": "app/api/resumo/route.js",
-  "/api/lancamentos/[id]/route": "app/api/lancamentos/[id]/route.js",
-  "/page": "app/page.js",
-  "/api/gastos-fixos/[id]/route": "app/api/gastos-fixos/[id]/route.js",
-  "/_not-found/page": "app/_not-found/page.js"
+  "/api/gastos-fixos/route": "app/api/gastos-fixos/route.js",
+  "/api/lancamentos/route": "app/api/lancamentos/route.js"
 }

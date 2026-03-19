@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { geminiModel } from '../../../lib/gemini';
-import { supabase } from '../../../lib/supabase';
+import { createAuthClient } from '../../../lib/supabase';
 import { Lancamento } from '@finance/shared';
 
 export async function POST(req: Request) {
@@ -53,7 +53,8 @@ Mensagem do usuário: "${message}"
         }
 
         // Persist to Supabase
-        const { data, error } = await supabase
+        const supabaseAuth = createAuthClient(req);
+        const { data, error } = await supabaseAuth
             .from('lancamentos')
             .insert([
                 {
