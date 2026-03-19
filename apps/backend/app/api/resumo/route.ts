@@ -25,7 +25,13 @@ export async function GET(req: Request) {
         }
 
         // Buscando gastos fixos para incorporar no cálculo
-        const { data: gastosFixos } = await supabase.from('gastos_fixos').select('*');
+        const { data: gastosFixos, error: gFError } = await supabase.from('gastos_fixos').select('*');
+
+        if (gFError) {
+            console.error('Error fetching gastos_fixos:', gFError);
+            // If the table is missing, we might want to continue without it, but here we return 500 to alert the user
+            return NextResponse.json({ error: `Table gastos_fixos error: ${gFError.message}` }, { status: 500 });
+        }
 
         let totalGastos = 0;
         let totalEntradas = 0;

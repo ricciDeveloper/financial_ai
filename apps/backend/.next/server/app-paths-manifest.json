@@ -1,5 +1,0 @@
-{
-  "/api/resumo/route": "app/api/resumo/route.js",
-  "/api/gastos-fixos/route": "app/api/gastos-fixos/route.js",
-  "/api/lancamentos/route": "app/api/lancamentos/route.js"
-}
