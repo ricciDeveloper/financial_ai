@@ -1,52 +1,64 @@
-# Finance Chat System
+# 💰 Finance AI - Gestão Financeira Inteligente
 
-Este repositório contém o sistema completo de controle financeiro via Chat inteligente utilizando Next.js, Vue 3, Quasar e Gemini.
+![Finance AI Banner](https://img.shields.io/badge/Status-Complete-success?style=for-the-badge)
+![Tech Stack](https://img.shields.io/badge/Stack-Next.js%20|%20Vue%203%20|%20Supabase%20|%20Gemini-blue?style=for-the-badge)
+
+O **Finance AI** é uma plataforma de gestão financeira moderna que combina a agilidade do **Vue 3** com a inteligência artificial do **Google Gemini**. O sistema permite o controle total de gastos e entradas através de um chat inteligente e dashboards dinâmicos.
+
+---
+
+## ✨ Funcionalidades Principais
+
+- **💬 Assistente de Chat IA**: Adicione lançamentos conversando naturalmente. A IA (Gemini 2.5 Flash) categoriza automaticamente seus gastos e extrai valores e descrições.
+- **📊 Dashboard Interativo**: Visualize sua saúde financeira com gráficos agrupados por mês (Ganhos vs Gastos) utilizando ApexCharts.
+- **🔐 Multi-Tenant Auth**: Sistema completo de cadastro e login seguro via Supabase Auth, garantindo que cada usuário acesse apenas seus próprios dados.
+- **📑 Gestão de Lançamentos**: Listagem detalhada de todas as transações, com filtros por tipo e busca intuitiva.
+- **📅 Gastos Fixos**: Controle de despesas recorrentes que são automaticamente integradas ao seu fluxo mensal.
+- **🌓 Modo Escuro/Claro**: Interface moderna e responsiva construída com Quasar Framework.
+
+---
+
+## 🛠️ Tecnologias Utilizadas
+
+### Frontend
+- **Vue 3 (Composition API)**
+- **Quasar Framework** (UI Components)
+- **ApexCharts** (Data Visualization)
+- **Vite** (Build Tool)
+
+### Backend
+- **Next.js 14** (App Router)
+- **Google Generative AI** (Gemini API)
+- **Supabase** (Database & Authentication)
+- **TypeScript**
+
+---
 
 ## 🏗️ Estrutura do Monorepo
 
-- `apps/backend/`: API executada via Next.js App Router conectado ao Supabase. Processa requisições via Gemini.
-- `apps/frontend/`: Aplicação visual executada via Vite com Vue 3 e Quasar UI.
-- `packages/shared/`: Pacote contendo as definições de Tipos em TypeScript, compartilhados entre as aplicações.
+O projeto utiliza uma estrutura de monorepo organizada para facilitar a manutenção e escalabilidade:
 
-## 🚀 Setup e Execução Local
+- `apps/frontend/`: Interface do usuário (Vue 3 + Quasar).
+- `apps/backend/`: API e Integração com IA (Next.js).
+- `packages/shared/`: Definições de tipos e interfaces compartilhadas entre as aplicações.
 
-1. Instale as dependências usando `npm`:
-```bash
-npm install
-```
+---
 
-2. Configure o ambiente criando um `.env` usando o arquivo de exemplo:
-```bash
-cp .env.example .env
-```
-(Preencha com sua `GEMINI_API_KEY`, credenciais do Supabase, etc). O App precisa do banco de dados configurado no Supabase com uma tabela `lancamentos`.
+## 🔗 Acesse Agora
 
-**DDL Recomendado para o Supabase:**
-```sql
-CREATE TABLE lancamentos (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  tipo TEXT NOT NULL,
-  descricao TEXT NOT NULL,
-  valor NUMERIC NOT NULL,
-  data TIMESTAMP WITH TIME ZONE NOT NULL,
-  categoria TEXT NOT NULL,
-  forma_pagamento TEXT,
-  origem_entrada TEXT,
-  observacoes TEXT,
-  criado_em TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-);
-```
+A aplicação está disponível publicamente para testes:
+👉 **[sjfinancial-ai.vercel.app](https://sjfinancial-ai.vercel.app/)**
 
-3. Geração e Inicialização:
-No diretório raiz, execute:
-```bash
-npm run dev
-```
-
-O Frontend rodará em `http://localhost:3000` (via Vite proxy).
-A API Next.js rodará na porta `3001` (processando inteligência e rotas do Supabase).
+---
 
 ## 🌍 Deploy
 
-- Repositório está configurado para Deploy na Vercel via o arquivo `vercel.json`.
-- A Vercel interpretará `frontend` e `backend` perfeitamente, servindo as API's Next sob a rota `/api/*`.
+O projeto está otimizado para deploy na **Vercel**, com configurações prontas de roteamento no arquivo `vercel.json` tanto para o frontend quanto para o backend.
+
+---
+
+## 👤 Autor
+
+Desenvolvido por **João Victor Ricci** - [LinkedIn](https://www.linkedin.com/in/ricciDeveloper/) | [GitHub](https://github.com/ricciDeveloper)
+
+
