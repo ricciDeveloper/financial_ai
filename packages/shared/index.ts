@@ -35,6 +35,7 @@ export interface ResumoFinanceiro {
   gastosPorCategoria: Record<string, number>;
   entradasPorCategoria: Record<string, number>;
   fluxoDeCaixa: { data: string; totalDia: number }[];
+  fluxoMensal: { mes: string; ganhos: number; gastos: number }[];
 }
 
 export interface GastoFixo {

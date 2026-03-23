@@ -47,11 +47,11 @@
 
         <!-- Nova sessão de Gráficos -->
         <div class="row q-col-gutter-lg">
-          <!-- Gráfico de Evolução (Fluxo de Caixa) -->
+          <!-- Gráfico de Resumo Mensal (Ganhos vs Gastos) -->
           <div class="col-12">
             <q-card class="modern-card q-pa-md" :class="[$q.dark.isActive ? 'bg-grey-10' : 'bg-white']">
-              <div class="text-h6 q-mb-md">Evolução do Saldo (Fluxo Acumulado)</div>
-              <vue-apex-charts type="area" height="300" :options="linhaChartOptions" :series="linhaSeries" />
+              <div class="text-h6 q-mb-md">Resumo Mensal (Ganhos vs Gastos)</div>
+              <vue-apex-charts type="bar" height="300" :options="barChartOptions" :series="barSeries" />
             </q-card>
           </div>
 
@@ -96,50 +96,97 @@ const resumo = ref<ResumoFinanceiro | null>(null);
 const loading = ref(true);
 const error = ref('');
 
-// Para controlar os filtros date
+// Para controlar os filtros date - default para últimos 6 meses para mostrar retroativos
 const dateObj = new Date();
 const dates = ref({
-  start: new Date(dateObj.getFullYear(), dateObj.getMonth(), 1).toISOString().split('T')[0],
+  start: new Date(dateObj.getFullYear(), dateObj.getMonth() - 5, 1).toISOString().split('T')[0],
   end: new Date(dateObj.getFullYear(), dateObj.getMonth() + 1, 0).toISOString().split('T')[0]
 });
 
-// Configurações Globais ApexCharts
 const isDark = computed(() => $q.dark.isActive);
 
-// Configuração do Gráfico de Linha (Fluxo de Caixa)
-const linhaSeries = computed(() => [
+// Configuração do Gráfico de Barras (Resumo Mensal Agrupado)
+const barSeries = computed(() => [
   {
-    name: 'Saldo do Dia',
-    data: resumo.value?.fluxoDeCaixa.map(i => i.totalDia) || []
+    name: 'Ganhos',
+    data: resumo.value?.fluxoMensal.map(m => m.ganhos) || []
+  },
+  {
+    name: 'Gastos',
+    data: resumo.value?.fluxoMensal.map(m => m.gastos) || []
   }
 ]);
 
-const linhaChartOptions = computed<ApexOptions>(() => ({
-  chart: {
-    type: 'area',
-    toolbar: { show: false },
-    background: 'transparent'
-  },
-  theme: { mode: isDark.value ? 'dark' : 'light' },
-  colors: ['#1976D2'],
-  fill: {
-    type: 'gradient',
-    gradient: { shadeIntensity: 1, opacityFrom: 0.7, opacityTo: 0.2, stops: [0, 90, 100] }
-  },
-  dataLabels: { enabled: false },
-  stroke: { curve: 'smooth', width: 2 },
-  xaxis: {
-    categories: resumo.value?.fluxoDeCaixa.map(i => {
-      const parts = i.data.split('-');
-      return `${parts[2]}/${parts[1]}`;
-    }) || [],
-  },
-  yaxis: {
-    labels: {
-      formatter: (val: number) => `R$ ${val.toFixed(0)}`
+const barChartOptions = computed<ApexOptions>(() => {
+  const monthNames = [
+    'janeiro', 'fevereiro', 'março', 'abril', 'maio', 'june',
+    'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'
+  ];
+
+  return {
+    chart: {
+      type: 'bar',
+      toolbar: { show: false },
+      background: 'transparent'
+    },
+    theme: { mode: isDark.value ? 'dark' : 'light' },
+    plotOptions: {
+      bar: {
+        horizontal: false,
+        columnWidth: '55%',
+        borderRadius: 4,
+        dataLabels: {
+          position: 'top',
+        },
+      },
+    },
+    colors: ['#4CAF50', '#F44336'], // Verde para Ganhos, Vermelho para Gastos
+    dataLabels: {
+      enabled: true,
+      formatter: (val: number, opts: any) => {
+        if (val === 0) return '';
+        const seriesName = opts.w.config.series[opts.seriesIndex].name.toLowerCase().slice(0, 5);
+        return `${seriesName} ${val.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
+      },
+      offsetY: -20,
+      style: {
+        fontSize: '12px',
+        colors: [isDark.value ? '#fff' : '#333'],
+        fontWeight: 500
+      }
+    },
+    stroke: {
+      show: true,
+      width: 2,
+      colors: ['transparent']
+    },
+    xaxis: {
+      categories: resumo.value?.fluxoMensal.map(m => {
+        const [year, month] = m.mes.split('-');
+        return monthNames[parseInt(month) - 1];
+      }) || [],
+      labels: {
+        style: {
+          fontWeight: 600
+        }
+      }
+    },
+    yaxis: {
+      labels: {
+        formatter: (val: number) => `R$ ${val.toFixed(0)}`
+      }
+    },
+    legend: {
+      position: 'top',
+      horizontalAlign: 'right'
+    },
+    tooltip: {
+      y: {
+        formatter: (val: number) => `R$ ${val.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`
+      }
     }
-  }
-}));
+  };
+});
 
 // Configuração Pie - Gastos
 const gastosPieSeries = computed(() => {

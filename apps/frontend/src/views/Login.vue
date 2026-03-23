@@ -2,11 +2,20 @@
   <div class="login-container q-pa-md flex flex-center">
     <q-card class="login-card" bordered>
       <q-card-section class="bg-primary text-white">
-        <div class="text-h6">Financial AI - Login</div>
+        <div class="text-h6">Financial AI - {{ isSignup ? 'Criar Conta' : 'Login' }}</div>
       </q-card-section>
 
       <q-card-section>
-        <q-form @submit.prevent="handleLogin" class="q-gutter-md">
+        <q-form @submit.prevent="handleSubmit" class="q-gutter-md">
+          <q-input
+            v-if="isSignup"
+            filled
+            v-model="name"
+            label="Nome Completo"
+            lazy-rules
+            :rules="[val => val && val.length > 0 || 'Por favor digite seu nome']"
+          />
+
           <q-input
             filled
             v-model="email"
@@ -25,10 +34,9 @@
             :rules="[val => val && val.length > 0 || 'Por favor digite sua senha']"
           />
 
-          <div class="row justify-between items-center q-mt-md">
-            <!-- Em caso de não haver cadastro -->
-            <q-btn flat color="primary" label="Criar Conta" @click="handleSignup" />
-            <q-btn unelevated color="primary" type="submit" label="Entrar" :loading="loading" />
+          <div class="column q-gutter-y-sm q-mt-md">
+            <q-btn unelevated color="primary" type="submit" :label="isSignup ? 'Cadastrar' : 'Entrar'" :loading="loading" class="full-width" />
+            <q-btn flat color="primary" :label="isSignup ? 'Já tenho conta' : 'Criar nova conta'" @click="isSignup = !isSignup" class="full-width" />
           </div>
         </q-form>
       </q-card-section>
@@ -42,12 +50,22 @@ import { useRouter } from 'vue-router';
 import { useQuasar } from 'quasar';
 import { supabase } from '../services/supabase';
 
+const isSignup = ref(false);
+const name = ref('');
 const email = ref('');
 const password = ref('');
 const loading = ref(false);
 
 const router = useRouter();
 const $q = useQuasar();
+
+const handleSubmit = async () => {
+  if (isSignup.value) {
+    await handleSignup();
+  } else {
+    await handleLogin();
+  }
+};
 
 const handleLogin = async () => {
   loading.value = true;
@@ -76,11 +94,17 @@ const handleSignup = async () => {
     const { error } = await supabase.auth.signUp({
       email: email.value,
       password: password.value,
+      options: {
+        data: {
+          full_name: name.value
+        }
+      }
     });
     
     if (error) throw error;
     
     $q.notify({ type: 'positive', message: 'Conta criada! Verifique seu email ou tente logar.' });
+    isSignup.value = false;
   } catch (error: any) {
     $q.notify({ type: 'negative', message: error.message });
   } finally {

@@ -63,8 +63,20 @@
         </q-item>
       </q-list>
       
-      <div class="absolute-bottom q-pa-md text-center text-caption text-grey-5">
-        Feito com Next.js + Vue
+      <div class="absolute-bottom q-pa-md border-top-custom">
+        <div class="row items-center q-gutter-x-sm">
+          <q-avatar size="40px" font-size="20px" color="primary" text-color="white" class="shadow-2">
+            {{ userInitial }}
+          </q-avatar>
+          <div class="column justify-center overflow-hidden">
+            <div class="text-weight-bold text-subtitle2 ellipsis" :class="$q.dark.isActive ? 'text-white' : 'text-dark'">
+              {{ userName }}
+            </div>
+            <div class="text-caption text-grey-6 ellipsis">
+              {{ userEmail }}
+            </div>
+          </div>
+        </div>
       </div>
     </q-drawer>
 
@@ -79,7 +91,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, onMounted } from 'vue';
+import { ref, watch, onMounted, computed } from 'vue';
 import { useQuasar } from 'quasar';
 import { useRouter, useRoute } from 'vue-router';
 import { supabase } from './services/supabase';
@@ -89,9 +101,21 @@ const leftDrawerOpen = ref(false);
 const router = useRouter();
 const route = useRoute();
 
+const userName = ref('');
+const userEmail = ref('');
+const userInitial = computed(() => userName.value ? userName.value.charAt(0).toUpperCase() : '?');
+
 function toggleLeftDrawer () {
   leftDrawerOpen.value = !leftDrawerOpen.value;
 }
+
+const fetchUser = async () => {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (user) {
+    userEmail.value = user.email || '';
+    userName.value = user.user_metadata?.full_name || 'Usuário';
+  }
+};
 
 const handleLogout = async () => {
   await supabase.auth.signOut();
@@ -99,12 +123,14 @@ const handleLogout = async () => {
 };
 
 watch(() => route.path, (newPath) => {
-  console.log('Current Route Path:', newPath);
-  console.log('Current Route Name:', route.name);
+  if (newPath !== '/login') {
+    fetchUser();
+  }
 });
 
 // Persist dark mode state based on quasar settings if needed
 onMounted(() => {
+  fetchUser();
   const savedDark = localStorage.getItem('darkMode');
   if (savedDark !== null) {
     $q.dark.set(savedDark === 'true');
@@ -158,6 +184,13 @@ watch(() => $q.dark.isActive, (val) => {
 
 .bg-dark-page {
   background-color: #121212 !important;
+}
+
+.border-top-custom {
+  border-top: 1px solid rgba(0,0,0,0.05);
+}
+.body--dark .border-top-custom {
+  border-top: 1px solid rgba(255,255,255,0.05);
 }
 
 .modern-header {

@@ -9,8 +9,8 @@ export async function GET(req: Request) {
         const endDateParam = searchParams.get('endDate');
 
         const date = new Date();
-        // Default to current month if no dates are provided
-        const startDate = startDateParam || new Date(date.getFullYear(), date.getMonth(), 1).toISOString();
+        // Default to last 6 months if no dates are provided
+        const startDate = startDateParam || new Date(date.getFullYear(), date.getMonth() - 5, 1).toISOString();
         const endDate = endDateParam || new Date(date.getFullYear(), date.getMonth() + 1, 0, 23, 59, 59).toISOString();
 
         const { data: lancamentos, error } = await supabase
@@ -38,6 +38,7 @@ export async function GET(req: Request) {
         const gastosPorCategoria: Record<string, number> = {};
         const entradasPorCategoria: Record<string, number> = {};
         const fluxoPorDia: Record<string, number> = {};
+        const fluxoMensalMap: Record<string, { ganhos: number, gastos: number }> = {};
 
         // Adiciona o saldo inicial zerado na startDate
         const startDayStr = startDate.split('T')[0];
@@ -45,20 +46,23 @@ export async function GET(req: Request) {
 
         lancamentos?.forEach((item) => {
             const valor = Number(item.valor);
-            const dayStr = item.data.split('T')[0];
+            const dataStr = item.data.split('T')[0];
+            const dayStr = dataStr;
+            const monthKey = dataStr.slice(0, 7); // YYYY-MM
 
-            if (!fluxoPorDia[dayStr]) {
-                fluxoPorDia[dayStr] = 0;
-            }
+            if (!fluxoPorDia[dayStr]) fluxoPorDia[dayStr] = 0;
+            if (!fluxoMensalMap[monthKey]) fluxoMensalMap[monthKey] = { ganhos: 0, gastos: 0 };
 
             if (item.tipo === 'gasto') {
                 totalGastos += valor;
                 gastosPorCategoria[item.categoria] = (gastosPorCategoria[item.categoria] || 0) + valor;
                 fluxoPorDia[dayStr] -= valor;
+                fluxoMensalMap[monthKey].gastos += valor;
             } else if (item.tipo === 'entrada') {
                 totalEntradas += valor;
                 entradasPorCategoria[item.categoria] = (entradasPorCategoria[item.categoria] || 0) + valor;
                 fluxoPorDia[dayStr] += valor;
+                fluxoMensalMap[monthKey].ganhos += valor;
             }
         });
 
@@ -73,6 +77,9 @@ export async function GET(req: Request) {
             while (iterDate.getTime() <= endMonthTime) {
                 const year = iterDate.getFullYear();
                 const month = iterDate.getMonth();
+                const monthKey = `${year}-${(month + 1).toString().padStart(2, '0')}`;
+
+                if (!fluxoMensalMap[monthKey]) fluxoMensalMap[monthKey] = { ganhos: 0, gastos: 0 };
 
                 gastosFixos.forEach((gf: any) => {
                     const gfDate = new Date(year, month, gf.dia_vencimento);
@@ -88,11 +95,12 @@ export async function GET(req: Request) {
                             totalEntradas += val;
                             entradasPorCategoria[gf.categoria] = (entradasPorCategoria[gf.categoria] || 0) + val;
                             fluxoPorDia[dayStr] += val;
+                            fluxoMensalMap[monthKey].ganhos += val;
                         } else {
-                            // gasta fallback to existing behavior 
                             totalGastos += val;
                             gastosPorCategoria[gf.categoria] = (gastosPorCategoria[gf.categoria] || 0) + val;
                             fluxoPorDia[dayStr] -= val;
+                            fluxoMensalMap[monthKey].gastos += val;
                         }
                     }
                 });
@@ -111,15 +119,13 @@ export async function GET(req: Request) {
             };
         });
 
-        if (fluxoEvolucao.length === 1) {
-            const parts = fluxoEvolucao[0].data.split('-');
-            const numDia = parseInt(parts[2], 10) + 1;
-            const fakeDate = `${parts[0]}-${parts[1]}-${numDia.toString().padStart(2, '0')}`;
-            fluxoEvolucao.push({
-                data: fakeDate,
-                totalDia: fluxoEvolucao[0].totalDia
-            });
-        }
+        // Formata fluxo mensal para array ordenado
+        const fluxoMensal = Object.entries(fluxoMensalMap)
+            .sort(([a], [b]) => a.localeCompare(b))
+            .map(([mes, valores]) => ({
+                mes,
+                ...valores
+            }));
 
         const saldo = totalEntradas - totalGastos;
 
@@ -130,7 +136,8 @@ export async function GET(req: Request) {
                 totalEntradas,
                 gastosPorCategoria,
                 entradasPorCategoria,
-                fluxoDeCaixa: fluxoEvolucao // Enviaremos a conta acumulada pro chart ficar mais bonito
+                fluxoDeCaixa: fluxoEvolucao,
+                fluxoMensal
             }
         });
     } catch (error: any) {
